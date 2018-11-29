@@ -23,9 +23,11 @@ def main(setting, name):
 #    run(setting, "optimal", name)
    run(setting, "UCB", name)
 
-# alg: string indicating how to select arms
-# setting: "bandit" or "finite", indicating whether we have fixed-bound-width or fixed-sample stopping criteria
-# name: string indicating which game to create
+# Runs given algorithm with given setting and game name many iterations and averages results, then saves results to a file for output later.
+# Parameters:
+#  - alg: string indicating how to select arms
+#  - setting: "bandit" or "finite", indicating whether we have fixed-bound-width or fixed-sample stopping criteria
+#  - name: string indicating which game to create
 def run(setting, alg, name):
     if name == "uniMeans":
         means = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
@@ -84,15 +86,16 @@ def run(setting, alg, name):
 # Runs algorithm and returns relevant information.
 #     if setting == "bandit": returns [sample distribution at each time, bound width at each time, best deviation at each time]
 #     if setting == "finite": returns [number of samples taken, final upper bound, final lower bound] 
-# game: object of ToyGame class
-# mix: list of weights in mixed strategy
-# alpha: total desired probability of error
-# subg: subgaussian parameter for all payoffs
-# alg: string indicating how to select arms
-# setting: "bandit" or "finite", indicating whether we have fixed-bound-width or fixed-sample stopping criteria
-# z: desired bound width
-# K: number of times to check stopping criterion (for Bonferroni correction)
-# T: maximum number of samples to take
+# Parameters:
+#  - game: object of ToyGame class
+#  - mix: list of weights in mixed strategy
+#  - alpha: total desired probability of error
+#  - subg: subgaussian parameter for all payoffs
+#  - alg: string indicating how to select arms
+#  - setting: "bandit" or "finite", indicating whether we have fixed-bound-width or fixed-sample stopping criteria
+#  - z: desired bound width
+#  - K: number of times to check stopping criterion (for Bonferroni correction)
+#  - T: maximum number of samples to take
 def bandit(game, mix, alpha, subg, alg, setting, z=None, K=None, T=None):
     if setting == "bandit": # stopping criterion: T samples taken
         assert(z == None and K == None and T != None)

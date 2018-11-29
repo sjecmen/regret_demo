@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 import sys
 
 # Creates graphs based off of saved data from regret.py
-# Currently generates graphs for greedy, uniform, optimal, and UCB algorithms for the given setting and game.
 
-# setting: bandit or finite
-# name: name of game
+# Generates graphs for greedy, uniform, optimal, and UCB algorithms for the given setting and game.
+# Parameters:
+#  - setting: bandit or finite
+#  - name: name of game
 def main(setting, name):
     if setting == "bandit":
         output_bandit(name)
