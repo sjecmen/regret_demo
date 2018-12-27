@@ -1,21 +1,6 @@
 import numpy as np
 import sys
-
-class ToyGame: # gaussian payoffs
-    def __init__(self, means, std):
-        self.means = means
-        self.std = std
-        self.num_strats = np.size(means)
-
-    def regret(self, mix):
-        return np.max(self.means) - np.dot(self.means, mix)
-
-    def sample(self, strat):
-        return np.random.normal(self.means[strat], self.std)
-
-    def i_star(self):
-        return np.argmax(self.means)
-
+from ToyGame import ToyGame
 
 def main(setting, name):
 #    run(setting, "greedy", name)
