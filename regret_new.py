@@ -4,9 +4,9 @@ from ToyGame import ToyGame
 from ToyGame import Scenario
 from Algorithm import Algorithm
 
-def main(algo_name, game_name):
+def main(algo_name, bound_name, game_name):
     scenario = Scenario(game_name)
-    algo = Algorithm.make(algo_name, scenario)
+    algo = Algorithm.make(algo_name, bound_name, scenario)
 
     w = float("inf")
     K = scenario.game.size()
@@ -19,11 +19,13 @@ def main(algo_name, game_name):
              means[i] += scenario.game.sample(i)
          means[i] /= samples[i] 
     while algo.width(means, samples) > scenario.W:
-        print(algo.width(means, samples))
+#        print(algo.width(means, samples))
         j = algo.sample(means, samples)
         means[j] = ((means[j] * samples[j]) + scenario.game.sample(j)) / (samples[j] + 1)
         samples[j] += 1
     print("samples taken:", sum(samples))
+    print("final bounds:", means + algo.bound_superarms(means, samples))
+    print("true means:", scenario.game.means)
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3])
