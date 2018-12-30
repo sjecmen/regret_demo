@@ -1,11 +1,16 @@
 import numpy as np
 import sys
-from ToyGame import ToyGame
-from ToyGame import Scenario
+from Scenario import ToyGame
+from Scenario import Scenario
 from Algorithm import Algorithm
 
-def main(algo_name, bound_name, game_name):
-    scenario = Scenario(game_name)
+''' USAGE - command line args
+algo_name: workshop, opt, or uniform
+bound_name: lil or hoeffding
+scenario_name: one of the scenarios specified in Scenario.py
+'''
+def main(algo_name, bound_name, scenario_name):
+    scenario = Scenario(scenario_name)
     algo = Algorithm.make(algo_name, bound_name, scenario)
 
     w = float("inf")

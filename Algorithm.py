@@ -106,7 +106,7 @@ def coefficient(mix, i_star):
 def lil_bound(epsilon, delta, t, subg):
     t1 = 1 + math.sqrt(epsilon)
     te = (1 + epsilon) * t
-    t2 = 2 * (subg**2) * ((1 + epsilon) / t) * math.log(math.log(te) / delta)
+    t2 = ((2 * (subg**2) * (1 + epsilon)) / t) * math.log(math.log(te) / delta)
     return t1 * math.sqrt(t2)
 
 def lil_derivative(epsilon, delta, t, subg, coeff):
@@ -120,23 +120,27 @@ def lil_derivative(epsilon, delta, t, subg, coeff):
         assert(False)
     return res
 
-# As above, but fixed epsilon
 def calculate_delta_lil(alpha, K, epsilon):
     t1 = math.log(1 + epsilon)
     t2 = (epsilon * alpha) / (2 * K * (2 + epsilon))
-    return t1 * (t2**(1 / (1 + epsilon)))
+    delta = t1 * (t2**(1 / (1 + epsilon)))
+    print("delta:", delta)
+    return delta
 
 ''' Hoeffding Bound '''
 def hoeffding_bound(delta, t, subg, coeff): # t is a vector
     t1 = 2 * (subg**2) * math.log(1 / delta)
     t2 = sum([(coeff[i]**2) / t[i] for i in range(len(t))])
-    return t1 * t2
+    return math.sqrt(t1 * t2)
 
 # Returns absolute value (positive), with common term removed
 def hoeffding_derivative(c, t): # t and c are scalars for specific term
     return c**2 / t**2
 
-# Uses the upper bound on t based only on W for all arms on both sides. Lambert W function used to solve log(1/delta)*delta = alpha/C.
+# Uses the upper bound on t based only on W for all arms on both sides, since we have to union bound over time:
+# t_max = (8 * subg**2 * log(1/delta) * K)/W**2 
+# Constraint on alpha is: alpha = t_max * K * 2 * delta
+# Lambert W function used to solve log(1/delta)*delta = alpha/C.
 def calculate_delta_hoeffding(alpha, K, subg, W):
     t_bound_coeff = (8 * K * subg**2) / (W**2) # this * log(1/delta) is the upper bound on number samples
     delta_term_coeff = t_bound_coeff * K * 2 # this * log(1/delta) * delta is the result of union bound over time and arms
@@ -147,5 +151,7 @@ def calculate_delta_hoeffding(alpha, K, subg, W):
     assert(max_t >= 20)
     print("t cannot be more than", max_t)
 
-    return math.exp(log_delta)
+    delta = math.exp(log_delta)
+    print("delta:", delta)
 
+    return delta

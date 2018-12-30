@@ -1,27 +1,5 @@
 import numpy as np
 
-# Game with gaussian deviation payoffs for all strategies. Gaussians have specified means and identical standard deviation.
-class ToyGame:
-    def __init__(self, means, std):
-        self.means = means
-        self.std = std
-        self.num_strats = np.size(means)
-
-    def regret(self, mix): # returns the true regret with respect to symmetric mixed strategy mix
-        return np.max(self.means) - np.dot(self.means, mix)
-
-    def sample(self, strat): # returns a payoff of the deviation payoff for strategy strat
-        return np.random.normal(self.means[strat], self.std)
-
-    def i_star(self): # returns the best deviation
-        return np.argmax(self.means)
-
-    def size(self): # returns number of arms
-        return len(self.means)
-
-    def subg(self):
-        return self.std
-
 
 # Holds game, mixed profile, and desired width parameters
 class Scenario:
@@ -52,4 +30,29 @@ class Scenario:
         self.game = ToyGame(means, subg)
         self.mix = mix
         self.W = W
+
+
+# Game with gaussian deviation payoffs for all strategies. Gaussians have specified means and identical standard deviation.
+class ToyGame:
+    def __init__(self, means, std):
+        self.means = means
+        self.std = std
+        self.num_strats = np.size(means)
+
+    def regret(self, mix): # returns the true regret with respect to symmetric mixed strategy mix
+        return np.max(self.means) - np.dot(self.means, mix)
+
+    def sample(self, strat): # returns a payoff of the deviation payoff for strategy strat
+        return np.random.normal(self.means[strat], self.std)
+
+    def i_star(self): # returns the best deviation
+        return np.argmax(self.means)
+
+    def size(self): # returns number of arms
+        return len(self.means)
+
+    def subg(self):
+        return self.std
+
+
 
