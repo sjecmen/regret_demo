@@ -130,7 +130,7 @@ class COCI(Algorithm):
     def bound_individual_arms(self, means, samples):
         if self.bound == "lil":
             bound_single = np.array([bd.lil_bound(self.epsilon, self.delta, t, self.subg) for t in samples])
-        elif self.bound == "coci": # TODO assumes rewards bounded on [0,1], unclear how to adapt for general subgaussian
+        elif self.bound == "coci": # assumes rewards bounded on [0,1]
             bound_single = np.array([bd.coci_bound(self.delta, sample, sum(samples), self.startup) for sample in samples])
         else:
             assert(False)

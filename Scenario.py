@@ -72,9 +72,9 @@ class ToyGame:
 class BoundedGame(ToyGame):
     def __init__(self, means, std):
         super(BoundedGame, self).__init__(means, std)
-        assert(all([mean < 1 and mean > 0 for mean in means]))
         self.min = 0
         self.max = 1
+        assert(all([mean <= self.max and mean >= self.min for mean in means]))
 
     def sample(self, strat): # returns a payoff of the deviation payoff for strategy strat
         return np.clip(np.random.normal(self.means[strat], self.std), self.min, self.max)

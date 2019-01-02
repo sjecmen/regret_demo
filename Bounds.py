@@ -62,7 +62,6 @@ def coci_bound(delta, samples, t, startup):
     t2 = math.log((4 * t**3) / (startup * delta))
     return math.sqrt(t1 * t2)
 
-
-# TODO check that this is correct
+# With common terms removed
 def coci_derivative(coeff, samples):
     return coeff / (samples**(3/2))
