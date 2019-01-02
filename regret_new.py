@@ -12,15 +12,15 @@ scenario_name: one of the scenarios specified in Scenario.py
 def main(algo_name, bound_name, scenario_name):
     scenario = Scenario(scenario_name)
     algo = Algorithm.make(algo_name, bound_name, scenario)
+    print("Running scenario", scenario_name, "with algorithm", algo_name, "and bound", bound_name)
 
     w = float("inf")
     K = scenario.game.size()
     means = np.zeros((K))
     samples = np.zeros((K))
-    startup = 2
     for i in range(K):
-         samples[i] = startup 
-         for t in range(startup):
+         samples[i] = algo.startup 
+         for t in range(algo.startup):
              means[i] += scenario.game.sample(i)
          means[i] /= samples[i] 
     while algo.width(means, samples) > scenario.W:
@@ -30,6 +30,8 @@ def main(algo_name, bound_name, scenario_name):
         samples[j] += 1
     print("samples taken:", sum(samples))
     print("final bounds:", means + algo.bound_superarms(means, samples))
+    print("samples:", samples)
+    print("widths:", algo.bound_superarms(means, samples))
     print("true means:", scenario.game.means)
 
 if __name__ == '__main__':
