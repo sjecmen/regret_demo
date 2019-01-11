@@ -1,0 +1,13 @@
+{
+    "players": {
+        "role": {
+            "noise": 20
+        }
+    },
+    "configuration": {
+        "markets": "cda",
+        "fundamentalMeanReversion": 0,
+        "fundamentalShockVar": 1e3,
+        "arrivalRate": 2e-3
+    }
+}

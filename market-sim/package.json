@@ -1,0 +1,17 @@
+{
+  "name": "market-sim",
+  "version": "4.0.0",
+  "description": "A discrete event financial market simulator",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "jsdom": "^7.2.2"
+  }
+}

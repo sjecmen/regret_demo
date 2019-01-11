@@ -1,0 +1,6 @@
+$mi = ((end-i) fundamentalZero + i fundamentalEnd)/end;
+$vi = i (end-i) shockVar / end;
+$expr = FullSimplify[Sum[$vi + $mi^2 - 2 $mi price + price^2, {i, a, b}] / (b - a + 1)];
+$variables = Cases[$expr, _Symbol, Infinity] // Union;
+$function = Cases[Compile[##] & [$variables, $expr], x_Function :> x] // First;
+CForm[$function]

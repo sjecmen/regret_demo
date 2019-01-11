@@ -1,0 +1,15 @@
+{
+    "assignment": {
+        "role": {
+            "a": 1,
+            "b": 1
+        }
+    },
+    "configuration": {
+        "markets": "cda",
+        "fundamentalMeanReversion": 0,
+        "fundamentalShockVar": 1e3,
+        "arrivalRate": 0.5,
+        "simLength": 10
+    }
+}

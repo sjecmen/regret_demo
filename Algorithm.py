@@ -60,6 +60,15 @@ class Algorithm:
             assert(False)
         return bound_sa
 
+    def bound_individual_arms(self, means, samples): # used only in special algorithms
+        if self.bound == "lil":
+            bound_single = np.array([bd.lil_bound(self.epsilon, self.delta, t, self.subg) for t in samples])
+        elif self.bound == "coci": # assumes rewards bounded on [0,1]
+            bound_single = np.array([bd.coci_bound(self.delta, sample, sum(samples), self.startup) for sample in samples])
+        else:
+            assert(False)
+        return bound_single
+
     def derivative_bound(self, means, samples, i_star):
         coeff = coefficient(self.mix, i_star)
         if self.bound == "lil":
@@ -78,7 +87,23 @@ class Workshop(Algorithm):
         super(Workshop, self).__init__(scenario, bound)
 
     def sample(self, means, samples):
-        bounds = means + self.bound_superarms(means, samples)
+        sa_means = coefficientize(self.mix, means)
+        bounds = sa_means + self.bound_superarms(means, samples)
+        i_star = np.argmax(bounds)
+        derivatives = self.derivative_bound(means, samples, i_star)
+        return np.argmax(derivatives)
+
+    # t_max = (8 * subg**2 * log(1/delta) * K)/W**2 
+    def sample_bound_coeff(self, W):
+        return (8 * self.K * self.subg**2) / (W**2)
+
+
+class WorkshopSingleArm(Algorithm):
+    def __init__(self, scenario, bound):
+        super(Workshop, self).__init__(scenario, bound)
+
+    def sample(self, means, samples):
+        bounds = means + self.bound_individual_arms(means, samples)
         i_star = np.argmax(bounds)
         derivatives = self.derivative_bound(means, samples, i_star)
         return np.argmax(derivatives)
@@ -126,15 +151,6 @@ class COCI(Algorithm):
     def __init__(self, scenario, bound):
         super(COCI, self).__init__(scenario, bound)
         assert(scenario.game.isBounded())
-
-    def bound_individual_arms(self, means, samples):
-        if self.bound == "lil":
-            bound_single = np.array([bd.lil_bound(self.epsilon, self.delta, t, self.subg) for t in samples])
-        elif self.bound == "coci": # assumes rewards bounded on [0,1]
-            bound_single = np.array([bd.coci_bound(self.delta, sample, sum(samples), self.startup) for sample in samples])
-        else:
-            assert(False)
-        return bound_single
 
     def sample(self, means, samples):
         bounding_terms = self.bound_individual_arms(means, samples)

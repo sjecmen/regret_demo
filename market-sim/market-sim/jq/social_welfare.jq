@@ -1,0 +1,1 @@
+.players | map(.payoff) | add

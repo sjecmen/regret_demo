@@ -1,0 +1,34 @@
+{
+    "assignment": {
+        "background": {
+            "markov:rmin_0_rmax_1000_thresh_0.4": 5,
+            "markov:rmin_0_rmax_1000_thresh_0.8": 5,
+            "markov:rmin_0_rmax_1000_thresh_1": 5,
+            "markov:rmin_0_rmax_2000_thresh_0.4": 5,
+            "markov:rmin_0_rmax_2000_thresh_0.8": 5,
+            "markov:rmin_0_rmax_2000_thresh_1": 5,
+            "markov:rmin_250_rmax_500_thresh_0.4": 5,
+            "markov:rmin_250_rmax_500_thresh_0.8": 5,
+            "markov:rmin_250_rmax_500_thresh_1": 5,
+            "hbl:rmin_250_rmax_500_thresh_1_NumTransactions_2": 5,
+            "hbl:rmin_250_rmax_500_thresh_1_NumTransactions_3": 5,
+            "hbl:rmin_250_rmax_500_thresh_1_NumTransactions_5": 5,
+            "hbl:rmin_250_rmax_500_thresh_1_NumTransactions_8": 4 
+        },
+        "spoof": {
+            "nsnl": 1
+        }
+    },
+    "configuration": {
+        "markets": "cda",
+        "fundamentalMean": 1e5,
+        "fundamentalMeanReversion": 0.05,
+        "fundamentalShockVar": 5e5,
+        "arrivalRate": 0.005,
+        "simLength": 10000,
+        "maxPosition": 10,
+        "privateValueVar": 5e6,
+        "fundamentalObservationVariance": 1e6,
+        "priceVarEst": "Infinity"
+    }
+}

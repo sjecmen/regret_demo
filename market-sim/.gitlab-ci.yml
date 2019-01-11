@@ -1,0 +1,9 @@
+image: market-sim:v4
+
+build:
+    script:
+        - cd market-sim && make jar
+
+test:
+    script:
+        - cd market-sim && make test

@@ -1,0 +1,6 @@
+$mi = ((kappac^i - 1) (kappac^(end-i) - 1) (kappac^end - 1) mean + kappac^i (kappac^(2(end-i))-1) fundamentalZero + kappac^(end-i) (kappac^(2 i) - 1) fundamentalEnd) / (kappac^(2 end) - 1);
+$vi = (kappac^(2i)-1)(kappac^(2(end-i))-1) shockVar/((kappac^2-1)(kappac^(2 end)-1));
+$expr = FullSimplify[Sum[$vi + $mi^2 - 2 $mi price + price^2, {i, a, b}] / (b - a + 1)];
+$variables = Cases[$expr, _Symbol, Infinity] // Union;
+$function = Cases[Compile[##] & [$variables, $expr], x_Function :> x] // First;
+CForm[$function]

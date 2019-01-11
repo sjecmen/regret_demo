@@ -1,5 +1,5 @@
 import numpy as np
-
+import SpoofingSim
 
 # Holds game, mixed profile, and desired width parameters
 class Scenario:
@@ -36,6 +36,12 @@ class Scenario:
             std = 1/4
             mix = [0, 0, 0, 0, 0.25, 0, 0, 0, 0.5, 0.25]
             self.game = BoundedGame(means, std)
+        elif name == "spoofing":
+            self.game = SpoofingGame()
+            W = 0.1
+            mix = np.random.random((SpoofingSim.spoofing_num_strats))
+            mix /= sum(mix)
+            print("spoofing mix:", mix)
         else:
             assert(False)
         self.mix = mix
@@ -52,7 +58,7 @@ class ToyGame:
     def regret(self, mix): # returns the true regret with respect to symmetric mixed strategy mix
         return np.max(self.means) - np.dot(self.means, mix)
 
-    def sample(self, strat): # returns a payoff of the deviation payoff for strategy strat
+    def sample(self, strat, mix): # returns a payoff of the deviation payoff for strategy strat
         return np.random.normal(self.means[strat], self.std)
 
     def i_star(self): # returns the best deviation
@@ -76,7 +82,7 @@ class BoundedGame(ToyGame):
         self.max = 1
         assert(all([mean <= self.max and mean >= self.min for mean in means]))
 
-    def sample(self, strat): # returns a payoff of the deviation payoff for strategy strat
+    def sample(self, strat, mix): # returns a payoff of the deviation payoff for strategy strat
         return np.clip(np.random.normal(self.means[strat], self.std), self.min, self.max)
 
     def subg(self):
@@ -85,3 +91,19 @@ class BoundedGame(ToyGame):
     def isBounded(self):
         return True
 
+class SpoofingGame():
+    def __init__(self):
+        self.emp_min, self.emp_max, _ = SpoofingSim.load_distribution()
+
+    def sample(self, strat, mix):
+        payoffs = SpoofingSim.sample_spoofing_simulation(strat, mix, self.emp_min, self.emp_max)
+        return payoffs[strat]
+
+    def subg(self):
+        return 1/4
+
+    def isBounded(self):
+        return True
+
+    def size(self): # returns number of arms
+        return SpoofingSim.spoofing_num_strats
