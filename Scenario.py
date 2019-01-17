@@ -30,15 +30,18 @@ class Scenario:
             std = 2
             mix = [0, 0, 0, 0, 0.25, 0, 0, 0, 0.5, 0.25]
             self.game = ToyGame(means, std)
-        elif name == "bounded": 
+        elif name == "boundedC": 
             W = 0.05
-            means = [0.75, 0.7, 0.65, 0.6, 0.55, 0.45, 0.4, 0.35, 0.3, 0.25]
+            means = [0.5, 0.42, 0.42, 0.42, 0.42, 0.42]
+            for i in range(14):
+                means.append(0.38)
+            assert(len(means))
             std = 1/4
-            mix = [0, 0, 0, 0, 0.25, 0, 0, 0, 0.5, 0.25]
+            mix = [0.05 for i in range(20)]
             self.game = BoundedGame(means, std)
         elif name == "spoofing":
             self.game = SpoofingGame()
-            W = 0.1
+            W = 0.05
             mix = np.random.random((SpoofingSim.spoofing_num_strats))
             mix /= sum(mix)
             print("spoofing mix:", mix)
@@ -73,23 +76,20 @@ class ToyGame:
     def isBounded(self):
         return False
 
-# As above, but payoffs bounded to [0, 1].
-# When using BoundedGame, algorithms will only know of the boundedness in [0,1], not the true std. Therefore, self.subg = 1/4, since subg of a bounded variable is (b-a)^2 / 4
+
+# Bernoulli variables, payoffs bounded to [0, 1].
+# self.subg or std = 1/4, since subg of a bounded variable is (b-a)^2 / 4
 class BoundedGame(ToyGame):
     def __init__(self, means, std):
-        super(BoundedGame, self).__init__(means, std)
-        self.min = 0
-        self.max = 1
-        assert(all([mean <= self.max and mean >= self.min for mean in means]))
+        super(BoundedGame, self).__init__(means, 1/4)
+        assert(all([mean <= 1 and mean >= 0 for mean in means]))
 
     def sample(self, strat, mix): # returns a payoff of the deviation payoff for strategy strat
-        return np.clip(np.random.normal(self.means[strat], self.std), self.min, self.max)
-
-    def subg(self):
-        return (self.max - self.min)**2 / 4
+        return np.random.binomial(1, self.means[strat]) 
 
     def isBounded(self):
         return True
+
 
 class SpoofingGame():
     def __init__(self):
@@ -107,3 +107,6 @@ class SpoofingGame():
 
     def size(self): # returns number of arms
         return SpoofingSim.spoofing_num_strats
+
+    def regret(self, mix):
+        return None # true means unknown

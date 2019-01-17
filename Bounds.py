@@ -37,6 +37,12 @@ def hoeffding_bound(delta, t, subg, coeff): # t is a vector
 def hoeffding_derivative(c, t): # t and c are scalars for specific term
     return c**2 / t**2
 
+# bound individual arm
+def hoeffding_bound_single(delta, t, subg): # t is a vector
+    t1 = 2 * (subg**2) * math.log(1 / delta)
+    t2 = 1 / t[i] 
+    return math.sqrt(t1 * t2)
+
 # Uses the upper bound on t based only on W for all arms on both sides, since we have to union bound over time:
 # t_max = t_bound_coeff * log(1/delta)
 # Constraint on alpha is: alpha = t_max * K * 2 * delta

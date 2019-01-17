@@ -15,7 +15,7 @@ class Algorithm:
             self.delta = bd.calculate_delta_lil(self.alpha, self.K, self.epsilon)
             self.startup = 2
         elif bound == "hoeffding":
-            t_bound_coeff = self.sample_bound_coeff(scenario.W) # t_max depends on specific algorithm TODO tighten bounds
+            t_bound_coeff = self.sample_bound_coeff(scenario.W) # t_max depends on specific algorithm TODO tighten bounds?
             self.delta = bd.calculate_delta_hoeffding(t_bound_coeff, scenario.W, self.K, self.alpha)
         elif bound == "coci": # requires bounded in [0,1]
             assert(scenario.game.isBounded())
@@ -32,14 +32,16 @@ class Algorithm:
             return Uniform(scenario, bound)
         elif name == "coci":
             return COCI(scenario, bound)
+        elif name == "workshopSingle":
+            return WorkshopSingleArm(scenario, bound)
         else:
             assert(False)
 
     def width(self, means, samples):
-        sa_means = coefficientize(self.mix, means)        
+        sa_means = means - np.dot(self.mix, means)        
         upper_bounds = sa_means + self.bound_superarms(means, samples)
         lower_bounds = sa_means - self.bound_superarms(means, samples)
-        return np.max(upper_bounds) - np.max(lower_bounds)
+        return np.max(upper_bounds) - np.max(lower_bounds) # could take max of 0 on lower bound as well, since regret cannot be negative - not necc.
 
     def sample(self, means, samples):
         pass
@@ -47,7 +49,7 @@ class Algorithm:
     def bound_superarms(self, means, samples): # returns bounding term
         if self.bound == "lil":
             bound_single = np.array([bd.lil_bound(self.epsilon, self.delta, t, self.subg) for t in samples])
-            bound_sa = coefficientize(self.mix, bound_single)
+            bound_sa = calculate_sa_bounds(self.mix, bound_single)
         elif self.bound == "hoeffding":
             bound_sa = np.zeros((len(means)))
             for i in range(len(means)):
@@ -55,7 +57,7 @@ class Algorithm:
                 bound_sa[i] = bd.hoeffding_bound(self.delta, samples, self.subg, coeff)
         elif self.bound == "coci":
             bound_single = np.array([bd.coci_bound(self.delta, sample, sum(samples), self.startup) for sample in samples])
-            bound_sa = coefficientize(self.mix, bound_single)
+            bound_sa = calculate_sa_bounds(self.mix, bound_single)
         else:
             assert(False)
         return bound_sa
@@ -63,6 +65,9 @@ class Algorithm:
     def bound_individual_arms(self, means, samples): # used only in special algorithms
         if self.bound == "lil":
             bound_single = np.array([bd.lil_bound(self.epsilon, self.delta, t, self.subg) for t in samples])
+        elif self.bound == "hoeffding":
+            assert(False)
+            bound_single = np.array([bd.hoeffding_bound_single(self.delta, t, self.subg) for t in samples]) # delta is arb TODO
         elif self.bound == "coci": # assumes rewards bounded on [0,1]
             bound_single = np.array([bd.coci_bound(self.delta, sample, sum(samples), self.startup) for sample in samples])
         else:
@@ -87,7 +92,7 @@ class Workshop(Algorithm):
         super(Workshop, self).__init__(scenario, bound)
 
     def sample(self, means, samples):
-        sa_means = coefficientize(self.mix, means)
+        sa_means = means - np.dot(self.mix, means)
         bounds = sa_means + self.bound_superarms(means, samples)
         i_star = np.argmax(bounds)
         derivatives = self.derivative_bound(means, samples, i_star)
@@ -100,7 +105,7 @@ class Workshop(Algorithm):
 
 class WorkshopSingleArm(Algorithm):
     def __init__(self, scenario, bound):
-        super(Workshop, self).__init__(scenario, bound)
+        super(WorkshopSingleArm, self).__init__(scenario, bound)
 
     def sample(self, means, samples):
         bounds = means + self.bound_individual_arms(means, samples)
@@ -123,7 +128,7 @@ class Opt(Algorithm):
         return np.argmax(derivatives)
 
     def width(self, means, samples): # override to use our i_star
-        sa_means = coefficientize(self.mix, means)
+        sa_means = means - np.dot(self.mix, means)
         upper_bounds = sa_means + self.bound_superarms(means, samples)
         lower_bounds = sa_means - self.bound_superarms(means, samples)
         return upper_bounds[self.i_star] - lower_bounds[self.i_star]
@@ -187,9 +192,11 @@ def coefficient(mix, i_star):
     return coeff
 
 # Return array of values weighted by coefficients for each position
-def coefficientize(mix, values):
-    sv = np.zeros((len(values)))
-    for i in range(len(values)):
+# IMPORTANT: Do not use this to calculate regret! Regret has weights 1-p_i, -p_j; this calculates 1-p_i, p_j.
+#     Instead, use this for calculating the bounding terms for superarms from the individual bounds.
+def calculate_sa_bounds(mix, bounds):
+    sv = np.zeros((len(bounds)))
+    for i in range(len(bounds)):
         coeff = coefficient(mix, i)
-        sv[i] = np.dot(coeff, values)
+        sv[i] = np.dot(coeff, bounds)
     return sv

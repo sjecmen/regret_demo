@@ -15,15 +15,19 @@ def main(algo_name, bound_name, scenario_name, setting_name):
     algo = Algorithm.make(algo_name, bound_name, scenario)
     print("Running scenario", scenario_name, "with algorithm", algo_name, "and bound", bound_name)
 
-    num_iterations = 10000
-    width_avg, sample_avg = run(scenario, algo, setting_name)
+    num_iterations = 100
+    width_avg, sample_avg, correct_avg = run(scenario, algo, setting_name)
     for i in range(num_iterations - 1):
-        width_history, sample_history = run(scenario, algo, setting_name)
+        if i % 10 == 0:
+            print("iter:", i)
+        width_history, sample_history, correct_history = run(scenario, algo, setting_name)
         width_avg += width_history
         sample_avg += sample_history
+        correct_avg += correct_history
     width_avg /= num_iterations
     sample_avg /= num_iterations
-    save_data(setting_name, algo_name, scenario_name, ["widths", "samples"], [width_avg, sample_avg])
+    correct_avg /= num_iterations
+    save_data(setting_name, algo_name, scenario_name, ["widths", "samples", "correct"], [width_avg, sample_avg, correct_avg])
         
 
 def run(scenario, algo, setting_name):
@@ -37,27 +41,30 @@ def run(scenario, algo, setting_name):
              means[i] += scenario.game.sample(i, algo.mix)
          means[i] /= samples[i] 
 
-    T = 1000
+    T = 10000
     sample_history = np.zeros((T, K))
     width_history = np.zeros((T))
+    correct_history = np.zeros((T))
 
     t = 0
     while True:
-        w = algo.width(means, samples)
-
-        sample_history[t] = samples
-        width_history[t] = w
-
-        if (setting_name == "finite" and w <= scenario.W) or (setting_name == "bandit" and t == T):
-            return width_history, sample_history
-
-        if t % 100 == 0:
-            print("t:", t, "w:", w)
-        t += 1
-
         j = algo.sample(means, samples)
         means[j] = ((means[j] * samples[j]) + scenario.game.sample(j, algo.mix)) / (samples[j] + 1)
         samples[j] += 1
+
+        w = algo.width(means, samples)
+        regret = scenario.game.regret(scenario.mix)
+
+        sample_history[t] = samples
+        width_history[t] = w
+        if regret != None:
+            emp_regret = np.max(means) - np.dot(algo.mix, means)
+            inside = (regret <= emp_regret + scenario.W) and (regret >= emp_regret - scenario.W)
+            correct_history[t] = 1 if inside else 0
+
+        t += 1
+        if (setting_name == "finite" and w <= scenario.W) or (setting_name == "bandit" and t == T):
+            return width_history, sample_history, correct_history
 
 
 def save_data(setting, alg, name, labels, files):
