@@ -30,14 +30,38 @@ class Scenario:
             std = 2
             mix = [0, 0, 0, 0, 0.25, 0, 0, 0, 0.5, 0.25]
             self.game = ToyGame(means, std)
-        elif name == "boundedC": 
+        elif name == "boundedA": 
             W = 0.05
             means = [0.5, 0.42, 0.42, 0.42, 0.42, 0.42]
             for i in range(14):
                 means.append(0.38)
-            assert(len(means))
+            assert(len(means) == 20)
             std = 1/4
             mix = [0.05 for i in range(20)]
+            self.game = BoundedGame(means, std)
+        elif name == "boundedB": 
+            W = 0.05
+            means = [0.5, 0.48]
+            for i in range(18):
+                means.append(0.37)
+            assert(len(means) == 20)
+            std = 1/4
+            mix = [0.2, 0, 0.3, 0.3, 0.1, 0.1]
+            for i in range(14):
+                mix.append(0)
+            assert(len(mix) == 20)
+            self.game = BoundedGame(means, std)
+        elif name == "boundedC": 
+            W = 0.05
+            means = [0.5, 0.48]
+            for i in range(18):
+                means.append(0.37)
+            assert(len(means) == 20)
+            std = 1/4
+            mix = [0, 0.2, 0.3, 0.3, 0.1, 0.1]
+            for i in range(14):
+                mix.append(0)
+            assert(len(mix) == 20)
             self.game = BoundedGame(means, std)
         elif name == "spoofing":
             self.game = SpoofingGame()
@@ -56,7 +80,6 @@ class ToyGame:
     def __init__(self, means, std):
         self.means = means
         self.std = std
-        self.num_strats = np.size(means)
 
     def regret(self, mix): # returns the true regret with respect to symmetric mixed strategy mix
         return np.max(self.means) - np.dot(self.means, mix)
@@ -96,8 +119,8 @@ class SpoofingGame():
         self.emp_min, self.emp_max, _ = SpoofingSim.load_distribution()
 
     def sample(self, strat, mix):
-        payoffs = SpoofingSim.sample_spoofing_simulation(strat, mix, self.emp_min, self.emp_max)
-        return payoffs[strat]
+        payoff = SpoofingSim.sample_spoofing_simulation(strat, mix, self.emp_min, self.emp_max)
+        return payoff
 
     def subg(self):
         return 1/4

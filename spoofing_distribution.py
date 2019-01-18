@@ -26,11 +26,9 @@ def main():
         strat = np.random.randint(0, SpoofingSim.spoofing_num_strats)
 
         playersList = SpoofingSim.sample_spoofing_simulation_unnorm(strat, mix)
-        payoffList = []
         for playerMap in playersList:
-            payoffList.append(playerMap["payoff"])
-        emp_min = min(emp_min, min(payoffList))
-        emp_max = max(emp_max, max(payoffList))
+            emp_min = min(emp_min, playerMap["payoff"])
+            emp_max = max(emp_max, playerMap["payoff"])
         t += 1
 
 if __name__ == '__main__':

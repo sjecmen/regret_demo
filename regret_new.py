@@ -5,9 +5,10 @@ from Scenario import Scenario
 from Algorithm import Algorithm
 
 ''' USAGE - command line args
-algo_name: workshop, opt, or uniform
-bound_name: lil or hoeffding
+algo_name: workshop, opt, uniform, etc
+bound_name: lil or hoeffding, etc
 scenario_name: one of the scenarios specified in Scenario.py
+setting_name: bandit (fixed time) or finite (fixed width)
 '''
 def main(algo_name, bound_name, scenario_name, setting_name):
     assert(setting_name == "bandit" or setting_name == "finite")
@@ -41,7 +42,7 @@ def run(scenario, algo, setting_name):
              means[i] += scenario.game.sample(i, algo.mix)
          means[i] /= samples[i] 
 
-    T = 10000
+    T = 250000
     sample_history = np.zeros((T, K))
     width_history = np.zeros((T))
     correct_history = np.zeros((T))
@@ -53,17 +54,21 @@ def run(scenario, algo, setting_name):
         samples[j] += 1
 
         w = algo.width(means, samples)
-        regret = scenario.game.regret(scenario.mix)
 
-        sample_history[t] = samples
-        width_history[t] = w
-        if regret != None:
-            emp_regret = np.max(means) - np.dot(algo.mix, means)
-            inside = (regret <= emp_regret + scenario.W) and (regret >= emp_regret - scenario.W)
-            correct_history[t] = 1 if inside else 0
+        if (setting_name == "bandit"):
+            sample_history[t] = samples
+            width_history[t] = w
+            regret = scenario.game.regret(scenario.mix)
+            if regret != None:
+                emp_regret = np.max(means) - np.dot(algo.mix, means)
+                inside = (regret <= emp_regret + scenario.W) and (regret >= emp_regret - scenario.W)
+                correct_history[t] = 1 if inside else 0
 
         t += 1
-        if (setting_name == "finite" and w <= scenario.W) or (setting_name == "bandit" and t == T):
+        if (setting_name == "finite" and w <= scenario.W):
+            print(t)
+            return width_history, sample_history, correct_history
+        elif (setting_name == "bandit" and t == T):
             return width_history, sample_history, correct_history
 
 

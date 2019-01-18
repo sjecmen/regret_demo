@@ -6,10 +6,10 @@ spoofing_strategy_names = ["markov:rmin_0_rmax_1000_thresh_0.4", "markov:rmin_0_
 spoofing_num_strats = len(spoofing_strategy_names)
 spoofing_num_players = 64
 
-def normalize_payoffs(payoff, emp_min, emp_max): # normalize to 0, 1 so that emp_max maps to 3/4 and emp_min maps to 1/4
+def normalize_payoffs(payoff, emp_min, emp_max): # normalize to 0, 1 so that emp_max maps to .9 and emp_min maps to .1
     emp_range = emp_max - emp_min
-    real_min = emp_min - (emp_range / 2)
-    real_max = emp_max + (emp_range / 2)
+    real_min = emp_min - (emp_range / 8)
+    real_max = emp_max + (emp_range / 8)
 
     norm = (payoff - real_min) / (real_max - real_min)
     if norm > 1:

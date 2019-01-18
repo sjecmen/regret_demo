@@ -21,6 +21,8 @@ def output_bandit(name):
     samples_uniform, widths_uniform, correct_uniform = load_data("bandit", "uniform", name)
     #samples_opt, widths_opt = load_data("bandit", "opt", name)
     #samples_ucb, widths_ucb = load_data("bandit", "coci", name)
+    samples_uas, widths_uas, correct_uas = load_data("bandit", "UAS", name)
+
 
     plt.rcParams.update({'font.size': 14})
 
@@ -29,6 +31,7 @@ def output_bandit(name):
     plt.plot(widths_uniform, label="Naive Uniform", color="red", linestyle=":")
     #plt.plot(widths_opt, label="Known Best Deviation", color="blue", linestyle="-")
     #plt.plot(widths_ucb, label="COCI", color="gold", linestyle="-.")
+    plt.plot(widths_uas, label="UAS", color="gold", linestyle="-.")
     plt.xlabel("Number of samples taken")
     plt.ylabel("Width of regret bound")
     plt.legend()
@@ -41,6 +44,7 @@ def output_bandit(name):
     plt.bar(np.arange(S) + 1 - 0.1, (samples_uniform[-1] - 1)/T, width=0.2, label="Naive Uniform", color="red")
     #plt.bar(np.arange(S) + 1 + 0.1, (samples_opt[-1] - 1)/T, width=0.2, label="Known Best Deviation", color="blue")
     #plt.bar(np.arange(S) + 1 + 0.3, (samples_ucb[-1] - 1)/T, width=0.2, label="COCI", color="gold")
+    plt.bar(np.arange(S) + 1 + 0.5, (samples_uas[-1] - 1)/T, width=0.2, label="UAS", color="gold")
     plt.xlabel("Action index")
     plt.ylabel("Proportion of samples")
     plt.xticks(np.arange(S) + 1)
@@ -56,6 +60,7 @@ def output_bandit(name):
     plt.plot(correct_uniform, label="Naive Uniform", color="red", linestyle=":")
     #plt.plot(correct_opt, label="Known Best Deviation", color="blue", linestyle="-")
     #plt.plot(correct_ucb, label="COCI", color="gold", linestyle="-.")
+    plt.plot(correct_uas, label="UAS", color="gold", linestyle="-.")
     plt.xlabel("Number of samples taken")
     plt.ylabel("% Bound Correct")
     plt.legend()

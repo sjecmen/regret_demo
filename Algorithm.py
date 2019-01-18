@@ -15,11 +15,14 @@ class Algorithm:
             self.delta = bd.calculate_delta_lil(self.alpha, self.K, self.epsilon)
             self.startup = 2
         elif bound == "hoeffding":
-            t_bound_coeff = self.sample_bound_coeff(scenario.W) # t_max depends on specific algorithm TODO tighten bounds?
+            t_bound_coeff = (16 * self.K * self.subg**2) / (scenario.W**2) # use uniform bound
             self.delta = bd.calculate_delta_hoeffding(t_bound_coeff, scenario.W, self.K, self.alpha)
         elif bound == "coci": # requires bounded in [0,1]
             assert(scenario.game.isBounded())
             self.delta = self.alpha # probability of error is self.alpha
+        elif bound == "hoeffdingSingle": # super-arm bounds constructed from single arm bounds
+            t_bound_coeff = (32 * self.K * self.subg**2) / (scenario.W**2) # uniform again
+            self.delta = bd.calculate_delta_hoeffding(t_bound_coeff, scenario.W, self.K, self.alpha)
         else:
             assert(False)
 
@@ -34,30 +37,31 @@ class Algorithm:
             return COCI(scenario, bound)
         elif name == "workshopSingle":
             return WorkshopSingleArm(scenario, bound)
+        elif name == "UAS":
+            return UAS(scenario, bound)
         else:
             assert(False)
 
     def width(self, means, samples):
         sa_means = means - np.dot(self.mix, means)        
-        upper_bounds = sa_means + self.bound_superarms(means, samples)
-        lower_bounds = sa_means - self.bound_superarms(means, samples)
+        bounds = self.bound_superarms(means, samples) 
+        upper_bounds = sa_means + bounds
+        lower_bounds = sa_means - bounds
         return np.max(upper_bounds) - np.max(lower_bounds) # could take max of 0 on lower bound as well, since regret cannot be negative - not necc.
 
     def sample(self, means, samples):
+        assert(False)
         pass
 
     def bound_superarms(self, means, samples): # returns bounding term
-        if self.bound == "lil":
-            bound_single = np.array([bd.lil_bound(self.epsilon, self.delta, t, self.subg) for t in samples])
+        if self.bound == "lil" or self.bound == "coci" or self.bound == "hoeffdingSingle":
+            bound_single = self.bound_individual_arms(means, samples)
             bound_sa = calculate_sa_bounds(self.mix, bound_single)
         elif self.bound == "hoeffding":
             bound_sa = np.zeros((len(means)))
             for i in range(len(means)):
                 coeff = coefficient(self.mix, i)
                 bound_sa[i] = bd.hoeffding_bound(self.delta, samples, self.subg, coeff)
-        elif self.bound == "coci":
-            bound_single = np.array([bd.coci_bound(self.delta, sample, sum(samples), self.startup) for sample in samples])
-            bound_sa = calculate_sa_bounds(self.mix, bound_single)
         else:
             assert(False)
         return bound_sa
@@ -67,9 +71,10 @@ class Algorithm:
             bound_single = np.array([bd.lil_bound(self.epsilon, self.delta, t, self.subg) for t in samples])
         elif self.bound == "hoeffding":
             assert(False)
-            bound_single = np.array([bd.hoeffding_bound_single(self.delta, t, self.subg) for t in samples]) # delta is arb TODO
         elif self.bound == "coci": # assumes rewards bounded on [0,1]
             bound_single = np.array([bd.coci_bound(self.delta, sample, sum(samples), self.startup) for sample in samples])
+        elif self.bound == "hoeffdingSingle":
+            bound_single = np.array([bd.hoeffding_bound_single(self.delta, t, self.subg) for t in samples])
         else:
             assert(False)
         return bound_single
@@ -81,7 +86,9 @@ class Algorithm:
         elif self.bound == "hoeffding":
             derivative = np.array([bd.hoeffding_derivative(coeff[i], samples[i]) for i in range(self.K)])
         elif self.bound == "coci":
-            derivative = np.array([bd.coci_derivative(coeff[i], samples[i]) for i in range(self.K)])
+            derivative = np.array([bd.coci_derivative(coeff[i], samples[i], self.delta, sum(samples), self.startup) for i in range(self.K)])
+        elif self.bound == "hoeffdingSingle":
+            derivative = np.array([bd.hoeffding_derivative_single(coeff[i], samples[i]) for i in range(self.K)])
         else:
             assert(False)
         return derivative
@@ -98,10 +105,6 @@ class Workshop(Algorithm):
         derivatives = self.derivative_bound(means, samples, i_star)
         return np.argmax(derivatives)
 
-    # t_max = (8 * subg**2 * log(1/delta) * K)/W**2 
-    def sample_bound_coeff(self, W):
-        return (8 * self.K * self.subg**2) / (W**2)
-
 
 class WorkshopSingleArm(Algorithm):
     def __init__(self, scenario, bound):
@@ -112,10 +115,6 @@ class WorkshopSingleArm(Algorithm):
         i_star = np.argmax(bounds)
         derivatives = self.derivative_bound(means, samples, i_star)
         return np.argmax(derivatives)
-
-    # t_max = (8 * subg**2 * log(1/delta) * K)/W**2 
-    def sample_bound_coeff(self, W):
-        return (8 * self.K * self.subg**2) / (W**2)
 
 
 class Opt(Algorithm):
@@ -129,14 +128,10 @@ class Opt(Algorithm):
 
     def width(self, means, samples): # override to use our i_star
         sa_means = means - np.dot(self.mix, means)
-        upper_bounds = sa_means + self.bound_superarms(means, samples)
-        lower_bounds = sa_means - self.bound_superarms(means, samples)
+        bounds = self.bound_superarms(means, samples)
+        upper_bounds = sa_means + bounds
+        lower_bounds = sa_means - bounds
         return upper_bounds[self.i_star] - lower_bounds[self.i_star]
-
-    # Use same bound as workshop for simplicity
-    # t_max = (8 * subg**2 * log(1/delta) * K)/W**2 
-    def sample_bound_coeff(self, W):
-        return (8 * self.K * self.subg**2) / (W**2)
 
 
 class Uniform(Algorithm):
@@ -146,16 +141,24 @@ class Uniform(Algorithm):
     def sample(self, means, samples):
         return np.argmin(samples)
 
-    # Bound uses t_i = t_j rather than derivative condition
-    # t_max = (16 * subg**2 * log(1/delta) * K)/W**2 
-    def sample_bound_coeff(self, W):
-        return (16 * self.K * self.subg**2) / (W**2)
+
+class UAS(Algorithm): # sample to get to uniform distribution among for i_star
+    def __init__(self, scenario, bound):
+        super(UAS, self).__init__(scenario, bound)
+
+    def sample(self, means, samples):
+        sa_means = means - np.dot(self.mix, means)
+        bounds = sa_means + self.bound_superarms(means, samples)
+        i_star = np.argmax(bounds)
+        candidates = [samples[i] if i == i_star or self.mix[i] > 0 else float("inf") for i in range(self.K)]
+        return np.argmin(candidates)
 
 
 class COCI(Algorithm):
     def __init__(self, scenario, bound):
         super(COCI, self).__init__(scenario, bound)
         assert(scenario.game.isBounded())
+        assert(self.bound == "coci")
 
     def sample(self, means, samples):
         bounding_terms = self.bound_individual_arms(means, samples)
@@ -165,19 +168,14 @@ class COCI(Algorithm):
         for i in range(self.K):
             is_best_arm = all([j == i or lower_bounds[i] > upper_bounds[j] for j in range(len(upper_bounds))]) # we are certain i is best
             is_not_best_arm = any([j != i and upper_bounds[i] < lower_bounds[j] for j in range(len(upper_bounds))]) # we are certain i is not best
+            assert(not (is_best_arm and is_not_best_arm))
             if not is_best_arm and not is_not_best_arm: # uncertain
                 candidates.append(i)
             elif is_best_arm:
                 best_arm = i
 
         if len(candidates) == 0: # sample optimal distribution for best_arm we know
-            coeff = coefficient(self.mix, best_arm)
-            if self.bound == "lil":
-                derivative = np.array([bd.lil_derivative(self.epsilon, self.delta, samples[i], self.subg, coeff[i]) for i in range(self.K)])
-            elif self.bound == "coci":
-                derivative = np.array([bd.coci_derivative(coeff[i], samples[i]) for i in range(self.K)])
-            else:
-                assert(False)
+            derivative = self.derivative_bound(means, samples, best_arm)
             return np.argmax(derivative)
         else: # sample candidate with largest radius
             mask = np.ones(len(bounding_terms), dtype=bool)

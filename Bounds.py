@@ -38,10 +38,15 @@ def hoeffding_derivative(c, t): # t and c are scalars for specific term
     return c**2 / t**2
 
 # bound individual arm
-def hoeffding_bound_single(delta, t, subg): # t is a vector
+def hoeffding_bound_single(delta, t, subg): # t is a scalar
     t1 = 2 * (subg**2) * math.log(1 / delta)
-    t2 = 1 / t[i] 
+    t2 = 1 / t 
     return math.sqrt(t1 * t2)
+
+# Returns absolute value (positive), with common term removed
+# Derivative of super-arm bound
+def hoeffding_derivative_single(c, t): # t and c are scalars for specific term
+    return c / t**(3/2)
 
 # Uses the upper bound on t based only on W for all arms on both sides, since we have to union bound over time:
 # t_max = t_bound_coeff * log(1/delta)
@@ -50,24 +55,29 @@ def hoeffding_bound_single(delta, t, subg): # t is a vector
 def calculate_delta_hoeffding(t_bound_coeff, W, K, alpha):
     delta_term_coeff = t_bound_coeff * K * 2 # this * log(1/delta) * delta is the result of union bound over time and arms
     alpha_term = alpha / delta_term_coeff # this must equal log(1/delta) * delta
-    log_delta = np.real(lambertw(-alpha_term, 1)) # two real solutions, larger delta requires t < 1 so use smaller
-
-    max_t = alpha / (math.exp(log_delta) * 2 * K)
-    assert(max_t >= 20)
-    print("t cannot be more than", max_t)
+    log_delta = np.real(lambertw(-alpha_term, -1)) # two real solutions on branches 0 and -1, the one with larger delta requires t < 1 so use smaller
+    assert(log_delta < np.real(lambertw(-alpha_term, 0)))
 
     delta = math.exp(log_delta)
     print("delta:", delta)
+
+    max_t = alpha / (delta * 2 * K)
+    assert(max_t >= 20)
+    print("t cannot be more than", max_t)
 
     return delta
 
 
 ''' COCI Bound (bound from COCI paper)'''
-def coci_bound(delta, samples, t, startup):
+def coci_bound(delta, samples, t, startup): # t here refers to total number of samples
     t1 = 1 / (2 * samples)
     t2 = math.log((4 * t**3) / (startup * delta))
     return math.sqrt(t1 * t2)
 
-# With common terms removed
-def coci_derivative(coeff, samples):
-    return coeff / (samples**(3/2))
+# With common terms removed. Note that t = t_{-i} + T_i, and take derivative wrt T_i.
+def coci_derivative(coeff, samples, delta, t, startup):
+    ti = math.log((4 * t**3) / (startup * delta))
+    t1 = ((1 / samples) * ti) - (3 / t)
+    t2 = coeff / samples**(1/2)
+    assert(t1 * t2 > 0)
+    return t1 * t2
