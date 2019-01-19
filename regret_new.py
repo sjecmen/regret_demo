@@ -28,7 +28,7 @@ def main(algo_name, bound_name, scenario_name, setting_name):
     width_avg /= num_iterations
     sample_avg /= num_iterations
     correct_avg /= num_iterations
-    save_data(setting_name, algo_name, scenario_name, ["widths", "samples", "correct"], [width_avg, sample_avg, correct_avg])
+    save_data(setting_name, algo_name, scenario_name, bound_name, ["widths", "samples", "correct"], [width_avg, sample_avg, correct_avg])
         
 
 def run(scenario, algo, setting_name):
@@ -72,9 +72,9 @@ def run(scenario, algo, setting_name):
             return width_history, sample_history, correct_history
 
 
-def save_data(setting, alg, name, labels, files):
+def save_data(setting, alg, name, bound, labels, files):
     for i, label in enumerate(labels):
-        np.save(label + "_" + alg + "_" + name + "_" + setting, files[i])
+        np.save(label + "_" + alg + "_" + name + "_" + bound + "_" + setting, files[i])
 
 
 if __name__ == '__main__':
