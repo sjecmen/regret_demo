@@ -8,7 +8,9 @@ def main():
     except FileNotFoundError:
         mix = np.random.random((SpoofingSim.spoofing_num_strats))
         mix /= sum(mix)
-        payoffs = SpoofingSim.sample_spoofing_simulation_unnorm(mix)
+        strat = np.random.randint(0, SpoofingSim.spoofing_num_strats)
+        market = np.random.choice(["LSHN", "MSMN", "HSLN"])
+        payoffs = SpoofingSim.sample_spoofing_simulation_unnorm(strat, mix, market)
         emp_min = np.min(payoffs)
         emp_max = np.max(payoffs)
         t = 1
@@ -24,8 +26,9 @@ def main():
         mix = np.random.random((SpoofingSim.spoofing_num_strats))
         mix /= sum(mix)
         strat = np.random.randint(0, SpoofingSim.spoofing_num_strats)
+        market = np.random.choice(["LSHN", "MSMN", "HSLN"])
 
-        playersList = SpoofingSim.sample_spoofing_simulation_unnorm(strat, mix)
+        playersList = SpoofingSim.sample_spoofing_simulation_unnorm(strat, mix, market)
         for playerMap in playersList:
             emp_min = min(emp_min, playerMap["payoff"])
             emp_max = max(emp_max, playerMap["payoff"])
