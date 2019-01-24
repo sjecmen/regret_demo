@@ -1,5 +1,6 @@
 import numpy as np
 import SpoofingSim
+import json
 
 # Holds game, mixed profile, and desired width parameters
 class Scenario:
@@ -63,12 +64,18 @@ class Scenario:
                 mix.append(0)
             assert(len(mix) == 20)
             self.game = BoundedGame(means, std)
-        elif name == "spoofing":
-            self.game = SpoofingGame()
+        elif name == "spoofingA":
+            self.game = SpoofingGame("LSHN")
             W = 0.05
-            mix = np.random.random((SpoofingSim.spoofing_num_strats))
-            mix /= sum(mix)
-            print("spoofing mix:", mix)
+            mix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.7, 0, 0, 0.3]
+        elif name == "spoofingB":
+            self.game = SpoofingGame("MSMN")
+            W = 0.05
+            mix = [0, 0, 0.33, 0, 0, 0, 0, 0, 0, 0.51, 0.16, 0, 0]
+        elif name == "spoofingC":
+            self.game = SpoofingGame("HSLN")
+            W = 0.05
+            mix = [0, 0, 0.12, 0, 0, 0, 0.29, 0, 0, 0.49, 0.1, 0, 0]
         else:
             assert(False)
         self.mix = mix
@@ -115,11 +122,13 @@ class BoundedGame(ToyGame):
 
 
 class SpoofingGame():
-    def __init__(self):
+    def __init__(self, market):
         self.emp_min, self.emp_max, _ = SpoofingSim.load_distribution()
+        self.market = market
+        assert(market == "LSHN" or market == "MSMN" or market == "HSLN")
 
     def sample(self, strat, mix):
-        payoff = SpoofingSim.sample_spoofing_simulation(strat, mix, self.emp_min, self.emp_max)
+        payoff = SpoofingSim.sample_spoofing_simulation(strat, mix, self.emp_min, self.emp_max, self.market)
         return payoff
 
     def subg(self):

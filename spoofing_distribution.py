@@ -14,7 +14,7 @@ def main():
         t = 1
     print("old min:", emp_min, "old max:", emp_max)
 
-    while True:
+    while t <= 250000:
         if t % 100 == 0:
             with open("spoofing_distribution.json", 'w') as past_work:
                 data = {"min":emp_min, "max":emp_max, "t":t}
