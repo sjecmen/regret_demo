@@ -71,17 +71,17 @@ def output_bandit(name):
 
 
 def output_finite(name):
-    samples_greedy, _ = load_data("finite", "workshop", name)
-    samples_uniform, _ = load_data("finite", "uniform", name)
-    samples_opt, _ = load_data("finite", "optimal", name)
-    samples_ucb, _ = load_data("finite", "coci", name)
+    samples_greedy, _ = load_data("finite", "workshop", name, "hoeffding")
+    samples_uniform, _ = load_data("finite", "uniform", name, "hoeffding")
+    samples_opt, _ = load_data("finite", "optimal", name, "hoeffding")
+    samples_ucb, _ = load_data("finite", "coci", name, "hoeffding")
     print("uniform:", sum(samples_uniform[-1]), "/ workshop:", sum(samples_greedy[-1]), "/ optimal:", sum(samples_opt[-1]), "/ COCI:", sum(samples_ucb[-1]))
 
 
-def load_data(setting, alg, name):
-    samples = np.load("samples_" + alg + "_" + name + "_" + setting + ".npy")
-    widths = np.load("widths_" + alg + "_" + name + "_" + setting + ".npy")
-    correct = np.load("correct_" + alg + "_" + name + "_" + setting + ".npy")
+def load_data(setting, alg, name, bound):
+    samples = np.load("samples_" + alg + "_" + name + "_" + bound + "_" + setting + ".npy")
+    widths = np.load("widths_" + alg + "_" + name + "_" + bound + "_" + setting + ".npy")
+    correct = np.load("correct_" + alg + "_" + name + "_" + bound + "_" + setting + ".npy")
     return samples, widths, correct
 
 if __name__ == '__main__':

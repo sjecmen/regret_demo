@@ -87,9 +87,9 @@ def run(scenario, algo, setting_name):
             return width_history, sample_history, correct_history, UB_history, mean_history
 
 
-def save_data(setting, alg, name, labels, files):
+def save_data(setting, alg, name, bound, labels, files):
     for i, label in enumerate(labels):
-        np.save(label + "_" + alg + "_" + name + "_" + setting, files[i])
+        np.save(label + "_" + alg + "_" + name + "_" + bound + "_" + setting, files[i])
 
 
 if __name__ == '__main__':
