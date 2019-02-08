@@ -16,13 +16,14 @@ def main(algo_name, bound_name, scenario_name, setting_name):
     algo = Algorithm.make(algo_name, bound_name, scenario)
     print("Running scenario", scenario_name, "with algorithm", algo_name, "and bound", bound_name)
 
-    num_iterations = 100
+    num_iterations = 1 #100
     width_avg, sample_avg, correct_avg, UB_avg, mean_avg = run(scenario, algo, setting_name)
+    '''
     for i in range(num_iterations - 1):
-        if i % 10 == 0:
-            print("iter:", i)
-            save_data(setting_name, algo_name, scenario_name, ["widths"+i, "samples"+i, "correct"+i, "UB"+i, "mean"+i], [width_avg/(i+1), sample_avg/(i+1), correct_avg/(i+1), UB_avg/(i+1), mean_avg/(i+1)])
-            print("w:", width_avg[-1]/(i+1))
+        #if i % 10 == 0:
+        #    print("iter:", i)
+        #    save_data(setting_name, algo_name, scenario_name, bound_name, ["widths"+str(i), "samples"+str(i), "correct"+str(i), "UB"+str(i), "mean"+str(i)], [width_avg/(i+1), sample_avg/(i+1), correct_avg/(i+1), UB_avg/(i+1), mean_avg/(i+1)])
+        #    print("w:", width_avg[-1]/(i+1))
         width_history, sample_history, correct_history, UB_history, mean_history = run(scenario, algo, setting_name)
         width_avg += width_history
         sample_avg += sample_history
@@ -34,7 +35,8 @@ def main(algo_name, bound_name, scenario_name, setting_name):
     correct_avg /= num_iterations
     UB_avg /= num_iterations
     mean_avg /= num_iterations
-    save_data(setting_name, algo_name, scenario_name, ["widths", "samples", "correct", "UB", "mean"], [width_avg, sample_avg, correct_avg, UB_avg, mean_avg])
+    '''
+    save_data(setting_name, algo_name, scenario_name, bound_name, ["widths", "samples", "correct", "UB", "mean"], [width_avg, sample_avg, correct_avg, UB_avg, mean_avg])
         
 
 def run(scenario, algo, setting_name):
@@ -63,24 +65,29 @@ def run(scenario, algo, setting_name):
 
         w = algo.width(means, samples)
 
-        if (setting_name == "bandit"):
-            sample_history[t] = samples
-            width_history[t] = w
+        sample_history[t] = samples
+        width_history[t] = w
 
-            sa_means = means - np.dot(algo.mix, means)        
-            bounds = algo.bound_superarms(means, samples) 
-            upper_bounds = sa_means + bounds
-            mean_history[t] = np.max(sa_means)
-            UB_history[t] = np.max(upper_bounds)
+        sa_means = means - np.dot(algo.mix, means)        
+        bounds = algo.bound_superarms(means, samples) 
+        upper_bounds = sa_means + bounds
 
-            regret = scenario.game.regret(scenario.mix)
-            if regret != None:
-                emp_regret = np.max(means) - np.dot(algo.mix, means)
-                inside = (regret <= emp_regret + scenario.W) and (regret >= emp_regret - scenario.W)
-                correct_history[t] = 1 if inside else 0
+        mean_history[t] = np.max(sa_means)
+        UB_history[t] = np.max(upper_bounds)
+        if algo.opt():
+            mean_history[t] = sa_means[scenario.game.i_star()]
+            UB_history[t] = upper_bounds[scenario.game.i_star()]
+
+        regret = scenario.game.regret(scenario.mix)
+        if regret != None:
+            emp_regret = np.max(means) - np.dot(algo.mix, means)
+            if algo.opt():
+                emp_regret = means[scenario.game.i_star()] - np.dot(algo.mix, means)
+            inside = (regret <= emp_regret + scenario.W) and (regret >= emp_regret - scenario.W)
+            correct_history[t] = 1 if inside else 0
 
         t += 1
-        if (setting_name == "finite" and w <= scenario.W):
+        if (setting_name == "finite" and (w <= scenario.W or t == T)):
             print(t)
             return width_history, sample_history, correct_history, UB_history, mean_history
         elif (setting_name == "bandit" and t == T):

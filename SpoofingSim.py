@@ -59,7 +59,7 @@ def sample_spoofing_simulation_unnorm(strat, mix, market): # returns list of pla
         json.dump(spec, specfile)
 
     # run simulation
-    subprocess.call("< spec.json ./market-sim/market-sim/market-sim.sh 1 > output.json", shell=True)
+    subprocess.run("< spec.json ./market-sim/market-sim/market-sim.sh 1 > output.json", shell=True)
 
     # read payoffs
     payoffs = np.zeros(len(mix))

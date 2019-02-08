@@ -93,6 +93,9 @@ class Algorithm:
             assert(False)
         return derivative
 
+    def opt(self):
+        return False
+
 
 class Workshop(Algorithm):
     def __init__(self, scenario, bound):
@@ -132,6 +135,9 @@ class Opt(Algorithm):
         upper_bounds = sa_means + bounds
         lower_bounds = sa_means - bounds
         return upper_bounds[self.i_star] - lower_bounds[self.i_star]
+
+    def opt(self):
+        return True
 
 
 class Uniform(Algorithm):
