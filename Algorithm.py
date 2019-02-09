@@ -100,11 +100,14 @@ class Algorithm:
 class Workshop(Algorithm):
     def __init__(self, scenario, bound):
         super(Workshop, self).__init__(scenario, bound)
+        self.i_stars = np.zeros(self.K) # TODO
 
     def sample(self, means, samples):
         sa_means = means - np.dot(self.mix, means)
         bounds = sa_means + self.bound_superarms(means, samples)
-        i_star = np.argmax(bounds)
+        i_star = np.random.randint(0, 2)#np.argmax(bounds)
+        self.i_stars[i_star] += 1 # TODO
+        #print("bounds", [round(bound, 4) for bound in bounds])
         derivatives = self.derivative_bound(means, samples, i_star)
         return np.argmax(derivatives)
 

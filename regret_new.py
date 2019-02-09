@@ -63,6 +63,15 @@ def run(scenario, algo, setting_name):
         means[j] = ((means[j] * samples[j]) + scenario.game.sample(j, algo.mix)) / (samples[j] + 1)
         samples[j] += 1
 
+        if (t % 10 == 0):
+            print("=============================")
+            #print([round(algo.i_stars[i] / sum(algo.i_stars), 4) for i in range(len(algo.i_stars))])
+            #print([round(mean, 4) for mean in means])
+            s0 = [samples[i] for i in [0, 9, 12]] 
+            s1 = [samples[i] for i in [1, 9, 12]] 
+            print(s0/ sum(s0))
+            print(s1/sum(s1))
+
         w = algo.width(means, samples)
 
         sample_history[t] = samples
