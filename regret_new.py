@@ -18,12 +18,8 @@ def main(algo_name, bound_name, scenario_name, setting_name):
 
     num_iterations = 1 #100
     width_avg, sample_avg, correct_avg, UB_avg, mean_avg = run(scenario, algo, setting_name)
-    '''
+    ''' 
     for i in range(num_iterations - 1):
-        #if i % 10 == 0:
-        #    print("iter:", i)
-        #    save_data(setting_name, algo_name, scenario_name, bound_name, ["widths"+str(i), "samples"+str(i), "correct"+str(i), "UB"+str(i), "mean"+str(i)], [width_avg/(i+1), sample_avg/(i+1), correct_avg/(i+1), UB_avg/(i+1), mean_avg/(i+1)])
-        #    print("w:", width_avg[-1]/(i+1))
         width_history, sample_history, correct_history, UB_history, mean_history = run(scenario, algo, setting_name)
         width_avg += width_history
         sample_avg += sample_history
@@ -50,27 +46,18 @@ def run(scenario, algo, setting_name):
              means[i] += scenario.game.sample(i, algo.mix)
          means[i] /= samples[i] 
 
-    T = 250000
+    T = 250000 #100000
     sample_history = np.zeros((T, K))
     width_history = np.zeros((T))
     correct_history = np.zeros((T))
-    UB_history = np.zeros((T))
-    mean_history = np.zeros((T))
+    UB_history = np.zeros((T, K))
+    mean_history = np.zeros((T, K))
 
     t = 0
     while True:
         j = algo.sample(means, samples)
         means[j] = ((means[j] * samples[j]) + scenario.game.sample(j, algo.mix)) / (samples[j] + 1)
         samples[j] += 1
-
-        if (t % 10 == 0):
-            print("=============================")
-            #print([round(algo.i_stars[i] / sum(algo.i_stars), 4) for i in range(len(algo.i_stars))])
-            #print([round(mean, 4) for mean in means])
-            s0 = [samples[i] for i in [0, 9, 12]] 
-            s1 = [samples[i] for i in [1, 9, 12]] 
-            print(s0/ sum(s0))
-            print(s1/sum(s1))
 
         w = algo.width(means, samples)
 
@@ -81,8 +68,8 @@ def run(scenario, algo, setting_name):
         bounds = algo.bound_superarms(means, samples) 
         upper_bounds = sa_means + bounds
 
-        mean_history[t] = np.max(sa_means)
-        UB_history[t] = np.max(upper_bounds)
+        mean_history[t] = sa_means
+        UB_history[t] = upper_bounds
         if algo.opt():
             mean_history[t] = sa_means[scenario.game.i_star()]
             UB_history[t] = upper_bounds[scenario.game.i_star()]
@@ -98,7 +85,7 @@ def run(scenario, algo, setting_name):
         t += 1
         if (setting_name == "finite" and (w <= scenario.W or t == T)):
             print(t)
-            return width_history, sample_history, correct_history, UB_history, mean_history
+            return width_history, sample_history, correct_history, UB_history, mean_history 
         elif (setting_name == "bandit" and t == T):
             return width_history, sample_history, correct_history, UB_history, mean_history
 

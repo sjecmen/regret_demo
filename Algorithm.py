@@ -39,6 +39,12 @@ class Algorithm:
             return WorkshopSingleArm(scenario, bound)
         elif name == "UAS":
             return UAS(scenario, bound)
+        elif name == "SALUCB":
+            return SALUCB(scenario, bound)
+        elif name == "SALUCBSingle":
+            return SALUCBSingleArm(scenario, bound)
+        elif name == "LUAS":
+            return LUAS(scenario, bound)
         else:
             assert(False)
 
@@ -100,14 +106,28 @@ class Algorithm:
 class Workshop(Algorithm):
     def __init__(self, scenario, bound):
         super(Workshop, self).__init__(scenario, bound)
-        self.i_stars = np.zeros(self.K) # TODO
 
     def sample(self, means, samples):
         sa_means = means - np.dot(self.mix, means)
         bounds = sa_means + self.bound_superarms(means, samples)
-        i_star = np.random.randint(0, 2)#np.argmax(bounds)
-        self.i_stars[i_star] += 1 # TODO
-        #print("bounds", [round(bound, 4) for bound in bounds])
+        i_star = np.argmax(bounds)
+        derivatives = self.derivative_bound(means, samples, i_star)
+        return np.argmax(derivatives)
+
+
+class SALUCB(Algorithm):
+    def __init__(self, scenario, bound):
+        super(SALUCB, self).__init__(scenario, bound)
+
+    def sample(self, means, samples):
+        sa_means = means - np.dot(self.mix, means)
+        bounding_terms = self.bound_superarms(means, samples)
+        upper_bounds = sa_means + bounding_terms
+        lower_bounds = sa_means - bounding_terms
+        if np.sum(samples) % 2 == 0:
+            i_star = np.argmax(upper_bounds)
+        else:
+            i_star = np.argmax(lower_bounds)
         derivatives = self.derivative_bound(means, samples, i_star)
         return np.argmax(derivatives)
 
@@ -119,6 +139,22 @@ class WorkshopSingleArm(Algorithm):
     def sample(self, means, samples):
         bounds = means + self.bound_individual_arms(means, samples)
         i_star = np.argmax(bounds)
+        derivatives = self.derivative_bound(means, samples, i_star)
+        return np.argmax(derivatives)
+
+
+class SALUCBSingleArm(Algorithm):
+    def __init__(self, scenario, bound):
+        super(SALUCBSingleArm, self).__init__(scenario, bound)
+
+    def sample(self, means, samples):
+        bounding_terms = self.bound_individual_arms(means, samples)
+        upper_bounds = means + bounding_terms
+        lower_bounds = means - bounding_terms
+        if np.sum(samples) % 2 == 0:
+            i_star = np.argmax(upper_bounds)
+        else:
+            i_star = np.argmax(lower_bounds)
         derivatives = self.derivative_bound(means, samples, i_star)
         return np.argmax(derivatives)
 
@@ -161,6 +197,24 @@ class UAS(Algorithm): # sample to get to uniform distribution among for i_star
         i_star = np.argmax(bounds)
         candidates = [samples[i] if i == i_star or self.mix[i] > 0 else float("inf") for i in range(self.K)]
         return np.argmin(candidates)
+
+
+class LUAS(Algorithm): # sample to get to uniform distribution among for i_star
+    def __init__(self, scenario, bound):
+        super(LUAS, self).__init__(scenario, bound)
+
+    def sample(self, means, samples):
+        sa_means = means - np.dot(self.mix, means)
+        bounding_terms = self.bound_superarms(means, samples)
+        upper_bounds = sa_means + bounding_terms
+        lower_bounds = sa_means - bounding_terms
+        if np.sum(samples) % 2 == 0:
+            i_star = np.argmax(upper_bounds)
+        else:
+            i_star = np.argmax(lower_bounds)
+        candidates = [samples[i] if i == i_star or self.mix[i] > 0 else float("inf") for i in range(self.K)]
+        return np.argmin(candidates)
+
 
 
 class COCI(Algorithm):

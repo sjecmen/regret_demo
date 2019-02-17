@@ -123,9 +123,9 @@ class BoundedGame(ToyGame):
 
 class SpoofingGame():
     def __init__(self, market):
-        self.emp_min, self.emp_max, _ = SpoofingSim.load_distribution()
         self.market = market
         assert(market == "LSHN" or market == "MSMN" or market == "HSLN")
+        self.emp_min, self.emp_max = SpoofingSim.load_distribution(market)
 
     def sample(self, strat, mix):
         payoff = SpoofingSim.sample_spoofing_simulation(strat, mix, self.emp_min, self.emp_max, self.market)

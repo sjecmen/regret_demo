@@ -6,27 +6,24 @@ spoofing_strategy_names = ["markov:rmin_0_rmax_1000_thresh_0.4", "markov:rmin_0_
 spoofing_num_strats = len(spoofing_strategy_names)
 spoofing_num_players = 64
 
-def normalize_payoffs(payoff, emp_min, emp_max): # normalize to 0, 1 so that emp_max maps to .75 and emp_min maps to .25
-    emp_range = emp_max - emp_min
-    real_min = emp_min - (emp_range / 2)
-    real_max = emp_max + (emp_range / 2)
+def normalize_payoffs(payoff, emp_min, emp_max): # normalize to 0, 1
+    real_min = emp_min
+    real_max = emp_max
 
     norm = (payoff - real_min) / (real_max - real_min)
     if norm > 1:
         norm = 1
     if norm < 0:
         norm = 0
-    if (norm == 1 or norm == 0):
-        print("WARNING: payoff bounds too tight")
     return norm
 
-def load_distribution():
-    past_work = open("spoofing_distribution.json", 'r')
-    history = json.load(past_work)
-    emp_min = history["min"]
-    emp_max = history["max"]
-    t = history["t"]
-    return emp_min, emp_max, t
+def load_distribution(market): # take 10000 * 65 samples, 95% within this range
+    if market == "LSHN":
+        return -3043.99065341657, 5990.580740809464
+    elif market == "MSMN":
+        return -8391.458334223938, 11254.361654069282
+    elif market == "HSLN":
+        return -12600.61541264787, 15370.989031487652 
 
 
 def sample_spoofing_simulation(strat, mix, emp_min, emp_max, market):
