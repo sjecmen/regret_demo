@@ -221,7 +221,7 @@ class COCI(Algorithm):
     def __init__(self, scenario, bound):
         super(COCI, self).__init__(scenario, bound)
         assert(scenario.game.isBounded())
-        assert(self.bound == "coci")
+        #assert(self.bound == "coci")
 
     def sample(self, means, samples):
         bounding_terms = self.bound_individual_arms(means, samples)
