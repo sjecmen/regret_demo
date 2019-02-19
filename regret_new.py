@@ -16,9 +16,9 @@ def main(algo_name, bound_name, scenario_name, setting_name):
     algo = Algorithm.make(algo_name, bound_name, scenario)
     print("Running scenario", scenario_name, "with algorithm", algo_name, "and bound", bound_name)
 
-    num_iterations = 1 #100
+    num_iterations = 1#100
     width_avg, sample_avg, correct_avg, UB_avg, mean_avg = run(scenario, algo, setting_name)
-    ''' 
+     
     for i in range(num_iterations - 1):
         width_history, sample_history, correct_history, UB_history, mean_history = run(scenario, algo, setting_name)
         width_avg += width_history
@@ -31,7 +31,7 @@ def main(algo_name, bound_name, scenario_name, setting_name):
     correct_avg /= num_iterations
     UB_avg /= num_iterations
     mean_avg /= num_iterations
-    '''
+    
     save_data(setting_name, algo_name, scenario_name, bound_name, ["widths", "samples", "correct", "UB", "mean"], [width_avg, sample_avg, correct_avg, UB_avg, mean_avg])
         
 
@@ -46,7 +46,7 @@ def run(scenario, algo, setting_name):
              means[i] += scenario.game.sample(i, algo.mix)
          means[i] /= samples[i] 
 
-    T = 250000 #100000
+    T = 250000# 100000
     sample_history = np.zeros((T, K))
     width_history = np.zeros((T))
     correct_history = np.zeros((T))
@@ -70,9 +70,6 @@ def run(scenario, algo, setting_name):
 
         mean_history[t] = sa_means
         UB_history[t] = upper_bounds
-        if algo.opt():
-            mean_history[t] = sa_means[scenario.game.i_star()]
-            UB_history[t] = upper_bounds[scenario.game.i_star()]
 
         regret = scenario.game.regret(scenario.mix)
         if regret != None:

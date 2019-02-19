@@ -52,8 +52,10 @@ class Algorithm:
         sa_means = means - np.dot(self.mix, means)        
         bounds = self.bound_superarms(means, samples) 
         upper_bounds = sa_means + bounds
-        lower_bounds = sa_means - bounds
-        return np.max(upper_bounds) - np.max(lower_bounds) # could take max of 0 on lower bound as well, since regret cannot be negative - not necc.
+        i = np.argmax(upper_bounds)
+        return bounds[i] * 2
+        #lower_bounds = sa_means - bounds
+        #return np.max(upper_bounds) - np.max(lower_bounds) # could take max of 0 on lower bound as well, since regret cannot be negative - not necc.
 
     def sample(self, means, samples):
         assert(False)
