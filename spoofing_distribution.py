@@ -12,20 +12,30 @@ def main():
         t = 0
     print("old min:", emp_min, "old max:", emp_max)
     '''
+    LSHNmix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.7, 0, 0, 0.3]
+    MSMNmix = [0, 0, 0.33, 0, 0, 0, 0, 0, 0, 0.51, 0.16, 0, 0]
+    HSLNmix = [0, 0, 0.12, 0, 0, 0, 0.29, 0, 0, 0.49, 0.1, 0, 0]
 
-    for market in ["LSHN", "MSMN", "HSLN"]:
+    for market, mix in zip(["LSHN", "MSMN", "HSLN"], [LSHNmix, MSMNmix, HSLNmix]):
+        means = np.zeros(SpoofingSim.spoofing_num_strats)
+        samples = np.zeros(SpoofingSim.spoofing_num_strats)
         payoffs = np.zeros((10000, 65))
         for t in range(10000):
-            mix = np.random.random((SpoofingSim.spoofing_num_strats))
-            mix /= sum(mix)
             strat = np.random.randint(0, SpoofingSim.spoofing_num_strats)
-            #market = np.random.choice(["LSHN", "MSMN", "HSLN"])
     
             playersList = SpoofingSim.sample_spoofing_simulation_unnorm(strat, mix, market)
+            payoffList = []
             for i, playerMap in enumerate(playersList):
                 payoffs[t][i] = playerMap["payoff"]
+                if playerMap["strategy"] == SpoofingSim.spoofing_strategy_names[strat]:
+                    payoffList.append(playerMap["payoff"])
+            payoff = np.random.choice(payoffList)
+            means[strat] = ((means[strat] * samples[strat]) + payoff) / (samples[strat] + 1)
+            samples[strat] += 1
+
             if t % 1000 == 0:
                 np.save("spoofing_distribution_" + market + ".npy", payoffs)
+                np.save("spoofing_means_" + market + ".npy", means)
                 print(t)
             t += 1
 

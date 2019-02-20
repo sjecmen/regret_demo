@@ -37,7 +37,7 @@ class Scenario:
             for i in range(14):
                 means.append(0.38)
             assert(len(means) == 20)
-            std = 1/4
+            std = 1/2
             mix = [0.05 for i in range(20)]
             self.game = BoundedGame(means, std)
         elif name == "boundedB": 
@@ -46,7 +46,7 @@ class Scenario:
             for i in range(18):
                 means.append(0.37)
             assert(len(means) == 20)
-            std = 1/4
+            std = 1/2
             mix = [0.2, 0, 0.3, 0.3, 0.1, 0.1]
             for i in range(14):
                 mix.append(0)
@@ -58,7 +58,7 @@ class Scenario:
             for i in range(18):
                 means.append(0.37)
             assert(len(means) == 20)
-            std = 1/4
+            std = 1/2
             mix = [0, 0.2, 0.3, 0.3, 0.1, 0.1]
             for i in range(14):
                 mix.append(0)
@@ -108,10 +108,10 @@ class ToyGame:
 
 
 # Bernoulli variables, payoffs bounded to [0, 1].
-# self.subg or std = 1/4, since subg of a bounded variable is (b-a)^2 / 4
+# self.subg or std = 1/2, since subg**2 of a bounded variable is (b-a)^2 / 4
 class BoundedGame(ToyGame):
     def __init__(self, means, std):
-        super(BoundedGame, self).__init__(means, 1/4)
+        super(BoundedGame, self).__init__(means, 1/2)
         assert(all([mean <= 1 and mean >= 0 for mean in means]))
 
     def sample(self, strat, mix): # returns a payoff of the deviation payoff for strategy strat
@@ -125,14 +125,14 @@ class SpoofingGame():
     def __init__(self, market):
         self.market = market
         assert(market == "LSHN" or market == "MSMN" or market == "HSLN")
-        self.emp_min, self.emp_max = SpoofingSim.load_distribution(market)
+        self.emp_min, self.emp_max = SpoofingSim.load_distribution(market, 75)
 
     def sample(self, strat, mix):
         payoff = SpoofingSim.sample_spoofing_simulation(strat, mix, self.emp_min, self.emp_max, self.market)
         return payoff
 
     def subg(self):
-        return 1/4
+        return 1/2
 
     def isBounded(self):
         return True
