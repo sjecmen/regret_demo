@@ -79,12 +79,16 @@ def run(scenario, algo, setting_name):
             inside = (regret <= emp_regret + scenario.W) and (regret >= emp_regret - scenario.W)
             correct_history[t] = 1 if inside else 0
 
+
         t += 1
         if (setting_name == "finite" and (w <= scenario.W or t == T)):
             print(t)
             return width_history, sample_history, correct_history, UB_history, mean_history 
         elif (setting_name == "bandit" and t == T):
             return width_history, sample_history, correct_history, UB_history, mean_history
+
+        if t % 5000 == 0:
+            save_data(setting_name + str(t), algo_name, scenario_name, bound_name, ["widths", "samples", "correct", "UB", "mean"], [width_avg, sample_avg, correct_avg, UB_avg, mean_avg])
 
 
 def save_data(setting, alg, name, bound, labels, files):

@@ -66,15 +66,15 @@ class Scenario:
             self.game = BoundedGame(means, std)
         elif name == "spoofingA":
             self.game = SpoofingGame("LSHN")
-            W = 0.05
+            W = 0.1#0.05
             mix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.7, 0, 0, 0.3]
         elif name == "spoofingB":
             self.game = SpoofingGame("MSMN")
-            W = 0.05
+            W = 0.1#0.05
             mix = [0, 0, 0.33, 0, 0, 0, 0, 0, 0, 0.51, 0.16, 0, 0]
         elif name == "spoofingC":
             self.game = SpoofingGame("HSLN")
-            W = 0.05
+            W = 0.1#0.05
             mix = [0, 0, 0.12, 0, 0, 0, 0.29, 0, 0, 0.49, 0.1, 0, 0]
         else:
             assert(False)
@@ -125,7 +125,8 @@ class SpoofingGame():
     def __init__(self, market):
         self.market = market
         assert(market == "LSHN" or market == "MSMN" or market == "HSLN")
-        self.emp_min, self.emp_max = SpoofingSim.load_distribution(market, 75)
+        percent =  50 # 75 # 95
+        self.emp_min, self.emp_max = SpoofingSim.load_distribution(market, percent)
 
     def sample(self, strat, mix):
         payoff = SpoofingSim.sample_spoofing_simulation(strat, mix, self.emp_min, self.emp_max, self.market)
@@ -142,3 +143,25 @@ class SpoofingGame():
 
     def regret(self, mix):
         return None # true means unknown
+'''
+class MTDGame():
+    def __init__(self):
+        percent =  50 # 75 # 95
+        self.emp_min, self.emp_max = MTDSim.load_distribution(percent)
+
+    def sample(self, strat, mix):
+        payoff = MTDSim.sample_spoofing_simulation(strat, mix, self.emp_min, self.emp_max)
+        return payoff
+
+    def subg(self):
+        return 1/2
+
+    def isBounded(self):
+        return True
+
+    def size(self): # returns number of arms
+        return MTDSim.spoofing_num_strats
+
+    def regret(self, mix):
+        return None # true means unknown
+'''

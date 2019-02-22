@@ -19,11 +19,13 @@ def analyze(arr, means):
     g = np.sqrt(np.var(arr))
     print(low, high)
     #print(mean - g, mean + g)
-    #print((means - low) / (high - low))
+    #newmeans = ((means - low) / (high - low))
+    #newmeans[newmeans > 1] = 1
+    #newmeans[newmeans < 0] = 0
     plt.axvline(x=low)
     plt.axvline(x=high)
-    x = np.linspace(min(arr), max(arr), 100)
-    plt.plot(x, mlab.normpdf(x, mean, g))
+    #x = np.linspace(min(arr), max(arr), 100)
+    #plt.plot(x, mlab.normpdf(x, mean, g))
     plt.show()
 
 analyze(lshn.flatten(), lshn_means)
