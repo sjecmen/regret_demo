@@ -16,11 +16,11 @@ def main(algo_name, bound_name, scenario_name, setting_name):
     algo = Algorithm.make(algo_name, bound_name, scenario)
     print("Running scenario", scenario_name, "with algorithm", algo_name, "and bound", bound_name)
 
-    num_iterations = 100 # 1
-    width_avg, sample_avg, correct_avg, UB_avg, mean_avg = run(scenario, algo, setting_name)
+    num_iterations = 1#100
+    width_avg, sample_avg, correct_avg, UB_avg, mean_avg = run(scenario, algo, setting_name, algo_name, scenario_name, bound_name)
      
     for i in range(num_iterations - 1):
-        width_history, sample_history, correct_history, UB_history, mean_history = run(scenario, algo, setting_name)
+        width_history, sample_history, correct_history, UB_history, mean_history = run(scenario, algo, setting_name, algo_name, scenario_name, bound_name)
         width_avg += width_history
         sample_avg += sample_history
         correct_avg += correct_history
@@ -35,7 +35,7 @@ def main(algo_name, bound_name, scenario_name, setting_name):
     save_data(setting_name, algo_name, scenario_name, bound_name, ["widths", "samples", "correct", "UB", "mean"], [width_avg, sample_avg, correct_avg, UB_avg, mean_avg])
         
 
-def run(scenario, algo, setting_name):
+def run(scenario, algo, setting_name, algo_name, scenario_name, bound_name):
     K = scenario.game.size()
 
     means = np.zeros((K))
@@ -79,6 +79,8 @@ def run(scenario, algo, setting_name):
             inside = (regret <= emp_regret + scenario.W) and (regret >= emp_regret - scenario.W)
             correct_history[t] = 1 if inside else 0
 
+        if t % 5000 == 0:
+            save_data(setting_name + str(t), algo_name, scenario_name, bound_name, ["widths", "samples", "correct", "UB", "mean"], [width_history, sample_history, correct_history, UB_history, mean_history])
 
         t += 1
         if (setting_name == "finite" and (w <= scenario.W or t == T)):
@@ -86,10 +88,6 @@ def run(scenario, algo, setting_name):
             return width_history, sample_history, correct_history, UB_history, mean_history 
         elif (setting_name == "bandit" and t == T):
             return width_history, sample_history, correct_history, UB_history, mean_history
-
-        #if t % 5000 == 0:
-        #    save_data(setting_name + str(t), algo_name, scenario_name, bound_name, ["widths", "samples", "correct", "UB", "mean"], [width_avg, sample_avg, correct_avg, UB_avg, mean_avg])
-
 
 def save_data(setting, alg, name, bound, labels, files):
     for i, label in enumerate(labels):
