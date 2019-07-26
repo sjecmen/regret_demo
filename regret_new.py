@@ -16,7 +16,7 @@ def main(algo_name, bound_name, scenario_name, setting_name):
     algo = Algorithm.make(algo_name, bound_name, scenario)
     print("Running scenario", scenario_name, "with algorithm", algo_name, "and bound", bound_name)
 
-    num_iterations = 1#100
+    num_iterations = 100 # 1
     width_avg, sample_avg, correct_avg, UB_avg, mean_avg = run(scenario, algo, setting_name)
      
     for i in range(num_iterations - 1):
@@ -46,7 +46,7 @@ def run(scenario, algo, setting_name):
              means[i] += scenario.game.sample(i, algo.mix)
          means[i] /= samples[i] 
 
-    T = 250000# 100000
+    T = 50000 #250000# 
     sample_history = np.zeros((T, K))
     width_history = np.zeros((T))
     correct_history = np.zeros((T))
@@ -87,8 +87,8 @@ def run(scenario, algo, setting_name):
         elif (setting_name == "bandit" and t == T):
             return width_history, sample_history, correct_history, UB_history, mean_history
 
-        if t % 5000 == 0:
-            save_data(setting_name + str(t), algo_name, scenario_name, bound_name, ["widths", "samples", "correct", "UB", "mean"], [width_avg, sample_avg, correct_avg, UB_avg, mean_avg])
+        #if t % 5000 == 0:
+        #    save_data(setting_name + str(t), algo_name, scenario_name, bound_name, ["widths", "samples", "correct", "UB", "mean"], [width_avg, sample_avg, correct_avg, UB_avg, mean_avg])
 
 
 def save_data(setting, alg, name, bound, labels, files):
