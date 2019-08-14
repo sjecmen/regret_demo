@@ -45,6 +45,8 @@ class Algorithm:
             return SALUCBSingleArm(scenario, bound)
         elif name == "LUAS":
             return LUAS(scenario, bound)
+        elif name == "SE":
+            return SE(scenario, bound)
         else:
             assert(False)
 
@@ -247,6 +249,54 @@ class COCI(Algorithm):
             mask[candidates] = False
             bounding_terms[mask] = 0 # set non-candidate radius to 0
             return np.argmax(bounding_terms)
+
+
+class SE(Algorithm): # SE WITH reuse between BA-ID and mix
+    def __init__(self, scenario, bound):
+        super(SE, self).__init__(scenario, bound)
+        self.S = list(range(self.K))
+        self.next_arm_to_sample = -1 # technically all start sampled once, so should remove first; -1 if between cycles
+        #assert(bound == "hoeffdingSingle")
+
+    def sample(self, means, samples):
+        bounding_terms = self.bound_individual_arms(means, samples)
+        if self.next_arm_to_sample != -1: # if in the middle of a cycle
+            to_sample = self.next_arm_to_sample
+            self.continue_SE_iteration(means, samples, bounding_terms, to_sample)
+            return to_sample
+
+        # else between cycles, decide which portion to do
+        best_arm_width = bounding_terms[self.argmax_in_S(bounding_terms)]
+        mix_width = np.dot(self.mix, bounding_terms)
+        if best_arm_width > mix_width:
+            to_sample = self.S[0] # since next arm == -1
+            self.continue_SE_iteration(means, samples, bounding_terms, to_sample)
+            return to_sample
+        else:
+            return np.random.choice(self.K, p=self.mix)
+
+    def width(self, means, samples): # use W/2 construction
+        bounding_terms = self.bound_individual_arms(means, samples)
+        best_arm_width = bounding_terms[self.argmax_in_S(bounding_terms)]
+        mix_width = np.dot(self.mix, bounding_terms)
+        return (best_arm_width + mix_width) * 2
+
+    def continue_SE_iteration(self, means, samples, bounding_terms, to_sample):
+        self.next_arm_to_sample = to_sample + 1 if to_sample + 1 < len(self.S) else -1
+        if self.next_arm_to_sample == -1: # rotate
+            upper_bounds = means + bounding_terms
+            lower_bounds = means - bounding_terms
+            new_S = []
+            max_arm = self.argmax_in_S(means)
+            for arm in self.S:
+                if upper_bounds[arm] > lower_bounds[max_arm]: #overlaps with best
+                    new_S.append(arm)
+            self.S = new_S    
+
+    def argmax_in_S(self, a):
+        a_in_S = [a[i] if i in self.S else -float("inf") for i in range(len(a))] # remove non-S
+        return np.argmax(a_in_S)
+       
 
 
 def coefficient(mix, i_star):
