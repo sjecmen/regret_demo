@@ -77,7 +77,7 @@ def run(scenario, algo, setting_name, algo_name, scenario_name, bound_name):
             emp_regret = np.max(means) - np.dot(algo.mix, means)
             if algo.opt():
                 emp_regret = means[scenario.game.i_star()] - np.dot(algo.mix, means)
-            inside = (regret <= emp_regret + scenario.W) and (regret >= emp_regret - scenario.W) # TODO this is width W*2???
+            inside = (regret <= emp_regret + (scenario.W/2)) and (regret >= emp_regret - (scenario.W/2))
             correct_history[t] = 1 if inside else 0
 
         #if t % 5000 == 0:
